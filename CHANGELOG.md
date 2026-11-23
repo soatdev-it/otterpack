@@ -2,6 +2,16 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.3 — 2026-11-23
+
+### Fixed
+
+- `scripts/install-otterpack.sh` no longer downgrades. It reinstalled whenever the installed version wasn't exactly its `TAG`, and a devcontainer runs it on every window reload. A project whose copy still pinned an older tag therefore put that version back over a newer otterpack installed by hand, and the seats ran the old one. It now keeps a newer installed version, and says how to pin it.
+
+### Upgrade
+
+- In each project's `.devcontainer/install-otterpack.sh`, set `TAG=v0.6.3`. Older copies of the script still downgrade on reload until then.
+
 ## 0.6.2 — 2026-11-23
 
 ### Fixed

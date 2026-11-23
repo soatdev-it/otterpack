@@ -220,7 +220,7 @@ Each project pins a library commit in `.otterpack/lock.json`. `otterpack update`
 
 Seats outlive a rebuild only if their conversations do. For that, put the harness's home folders on named volumes. Use the home folder of the user the container runs as.
 
-1. Copy [`scripts/install-otterpack.sh`](scripts/install-otterpack.sh) into your project's `.devcontainer/` folder. It installs the tag set at its top, and skips the install when that version is already there. It never fails the build: if it can't install, it prints why and exits 0. To upgrade, change `TAG`. A fork can set `OTTERPACK_REPO` instead of editing the script.
+1. Copy [`scripts/install-otterpack.sh`](scripts/install-otterpack.sh) into your project's `.devcontainer/` folder. It installs the tag set at its top. It skips the install when that version, or a newer one, is already there, so a window reload never downgrades an otterpack you upgraded by hand. It never fails the build: if it can't install, it prints why and exits 0. To upgrade, change `TAG`. A fork can set `OTTERPACK_REPO` instead of editing the script.
 
 2. Use it in `devcontainer.json`:
 
