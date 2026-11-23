@@ -9,6 +9,7 @@ import { realpathSync } from "node:fs";
 import { join } from "node:path";
 import { loadTeam, seatOf } from "./config.js";
 import { codexConversationExists, findClaudeTranscript, findCodexRollout, launchArgv } from "./harness.js";
+import * as tmux from "./tmux.js";
 import { briefChanges, briefOf, marker, renderKickoff, renderRebrief } from "./kickoff.js";
 import { clearSession, loadSessions, sessionFile, setSession, SESSIONS_DIR } from "./sessions.js";
 /** Pure: what launching this seat now would do. Shared by launch and `up --dry-run`. */
@@ -48,6 +49,8 @@ export function describe(d) {
 }
 export async function launch(root, seatId, opts = {}) {
     const env = opts.env ?? process.env;
+    // up marked this seat as starting when it typed this line: it is running now.
+    tmux.clearLaunching(env);
     const say = opts.stderr ?? ((s) => process.stderr.write(s));
     const home = env.HOME ?? "";
     const team = loadTeam(root);

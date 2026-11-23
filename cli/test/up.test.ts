@@ -184,12 +184,53 @@ test("seats opened at the same time (VS Code folder open) each start exactly onc
   // the second up of a seat must see it running, not type the launch again into the harness
   const out = outputs.join("");
   assert.equal(out.match(/created and launched/g)?.length, 3, out);
-  assert.equal(out.match(/already running/g)?.length, 2, out);
+  assert.equal(out.match(/already running|: starting \(/g)?.length, 2, out);
   assert.doesNotMatch(out, /bare shell, relaunched/);
   assert.equal(t("list-sessions").split("\n").length, 3);
   await waitFor("3 harness runs", () => runs(log).length === 3);
   await new Promise((r) => setTimeout(r, 800));
   assert.equal(runs(log).length, 3);
+});
+
+test("with a slow login shell, seats don't wait for each other, and a seat's second up never types its launch again", async () => {
+  const { root, home, log, env, t } = setup();
+  // A login shell that takes 7s (nvm, oh-my-zsh…): longer than any lock wait used to be.
+  writeFileSync(join(home, ".bash_profile"), `export PATH=${JSON.stringify(FAKE)}:"$PATH"\nsleep 7\n`);
+  const outputs: string[] = [];
+  const one = (seat: string) =>
+    new Promise<number>((res) => {
+      const p = spawn(SELF[0], [...SELF.slice(1), "up", seat, "--no-attach"], { cwd: root, env, stdio: ["ignore", "pipe", "inherit"] });
+      p.stdout.on("data", (d) => outputs.push(String(d)));
+      p.on("exit", (c) => res(c ?? -1));
+    });
+  const started = Date.now();
+  const first = await Promise.all(["claude-po", "codex-re", "claude-ux"].map(one));
+  // The second up of claude-po arrives while its shell is still starting.
+  const second = await one("claude-po");
+  assert.deepEqual([...first, second], [0, 0, 0, 0]);
+  assert.ok(Date.now() - started < 5_000, `ups took ${Date.now() - started}ms: they waited on the shells`);
+  const out = outputs.join("");
+  assert.equal(out.match(/created and launched/g)?.length, 3, out);
+  assert.match(out, /claude-po: starting \(its launch was typed \d+s ago; its shell hasn't run it yet\), attaching only/);
+  assert.doesNotMatch(out, /bare shell, relaunched/);
+  // Once the shells have run the launches: one harness per seat, and no mark left behind.
+  await waitFor("3 harness runs", () => runs(log).length === 3, 20_000);
+  await new Promise((r) => setTimeout(r, 800));
+  assert.equal(runs(log).length, 3);
+  for (const s of ["claude-po", "codex-re", "claude-ux"]) {
+    assert.equal(t("show-options", "-v", "-t", `=${s}:`, "-q", "@otterpack_launching"), "", `${s} still marked as starting`);
+  }
+});
+
+test("a stale starting mark (its launch never ran) doesn't stop a relaunch", async () => {
+  const { root, log, opts, t } = setup();
+  t("new-session", "-d", "-s", "claude-po", "-c", root);
+  t("set-option", "-t", "=claude-po:", "@otterpack_root", root);
+  t("set-option", "-t", "=claude-po:", "@otterpack_launching", String(Date.now() - 10 * 60_000));
+  await waitFor("bare shell", () => pane(t, "claude-po") === "bash");
+  const lines = await up(root, ["claude-po"], opts);
+  assert.match(lines.join("\n"), /claude-po: bare shell, relaunched/);
+  await waitFor("run", () => runs(log).length === 1);
 });
 
 test("--dry-run reports each seat and changes nothing", async () => {

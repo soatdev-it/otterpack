@@ -110,7 +110,7 @@ otterpack update                                    # move to the library's late
 | `update` | Moves the pin to the library's latest commit, lists the library commits and the files that change, then syncs. |
 | `list [--library src]` | Shows the templates, personas and kits in the library, each with one line about it. Inside a project, it reads the library at the pinned commit, adds the project's local personas and kits, and marks with `*` what the team uses. |
 | `doctor` | Checks what the seats need: tmux, the harness CLIs and their logins, the Codex sandbox, whether conversations survive a rebuild, the library and the sync. It never reads credential files. |
-| `status` | Shows each seat's state, harness, persona and conversation id, and says if a sync is needed. The state is one of: running, bare shell (the harness exited), stopped, disabled, or other project (a same-named tmux session that belongs to another project). |
+| `status` | Shows each seat's state, harness, persona and conversation id, and says if a sync is needed. The state is one of: running, starting (its launch was typed, and its shell hasn't run it yet), bare shell (the harness exited), stopped, disabled, or other project (a same-named tmux session that belongs to another project). |
 | `up [seat…] [--no-attach\|--dry-run]` | Starts or resumes seats in tmux. With one seat, it attaches to it. `--dry-run` prints what it would do. |
 | `stop [seat…]` | Stops this project's seats, all of them if none is named. Their conversations are kept. |
 | `reset <seat>` | Stops a seat and forgets its conversation. |
@@ -256,7 +256,7 @@ For tmux-resurrect, add a volume on `~/.tmux/resurrect`. `otterpack up` restores
 
 **"sync stopped, nothing was written".** A file is in the way. Run `otterpack sync --replace` (see [What sync writes](#what-sync-writes)).
 
-**"timed out after 60s waiting for the lock".** Another `otterpack up` is still setting up seats, possibly in another project, since all projects on one tmux server share the lock. The message names that process. Setup usually takes a few seconds per seat; the slow step is the tmux-resurrect restore when `up` starts the tmux server. If the holder is stuck, stop it with `kill <pid>`. The seats it already started keep running in tmux. Then run `otterpack up` again.
+**"timed out after 60s waiting for the lock".** Another `otterpack up` is still setting up seats, possibly in another project, since all projects on one tmux server share the lock. The message names that process. Setup takes milliseconds per seat. The only slow step is the tmux-resurrect restore, when `up` starts the tmux server. If the holder is stuck, stop it with `kill <pid>`. The seats it already started keep running in tmux. Then run `otterpack up` again.
 
 **"team.yaml changed since the last sync".** Run `otterpack sync`.
 

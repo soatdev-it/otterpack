@@ -138,7 +138,7 @@ export function status(root, opts = {}) {
     const server = tmux.serverRunning(t);
     const seats = team.seats.map((s) => {
         let { state, cmd, where } = server ? stateOf(t, s.id, root) : { state: "stopped", cmd: undefined, where: undefined };
-        if (s.disabled && state !== "running" && state !== "bare shell")
+        if (s.disabled && state !== "running" && state !== "starting" && state !== "bare shell")
             state = "disabled";
         return {
             id: s.id, label: s.label, harness: s.harness, persona: s.persona, state, command: cmd, where,

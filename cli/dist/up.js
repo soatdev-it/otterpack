@@ -36,17 +36,12 @@ export function stateOf(t, id, root) {
     if (o.owner === "other")
         return { state: "other project", where: o.where };
     const cmd = tmux.paneCommand(t, id);
-    return { state: tmux.SHELLS.has(cmd) ? "bare shell" : "running", cmd };
-}
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-/** After typing the launch: wait (up to 5 s) until the pane runs something other than the shell. */
-async function waitStarted(t, id) {
-    const end = Date.now() + 5_000;
-    while (Date.now() < end) {
-        if (!tmux.SHELLS.has(tmux.paneCommand(t, id)))
-            return;
-        await sleep(50);
-    }
+    if (!tmux.SHELLS.has(cmd))
+        return { state: "running", cmd };
+    const since = tmux.launchingSince(t, id);
+    if (since !== undefined && Date.now() - since < tmux.STARTING_FOR_MS)
+        return { state: "starting", cmd, since };
+    return { state: "bare shell", cmd };
 }
 export async function up(root, seatIds, opts = {}) {
     const env = opts.env ?? process.env;
@@ -90,8 +85,9 @@ export async function up(root, seatIds, opts = {}) {
             const plan = launcherProblem(s) ? `STOP: ${launcherProblem(s)}` : describe(decide(root, team, s, home));
             const action = state === "other project" ? `left alone: a session of another project (${where})` :
                 state === "running" ? `would attach only (${cmd})` :
-                    state === "bare shell" ? `would type the launch into the shell; ${plan}` :
-                        `would create the session and launch; ${plan}`;
+                    state === "starting" ? "would attach only (its launch was typed, and its shell hasn't run it yet)" :
+                        state === "bare shell" ? `would type the launch into the shell; ${plan}` :
+                            `would create the session and launch; ${plan}`;
             const conv = sessions[s.id]?.id || "-";
             say(`${s.id.padEnd(w)}  ${state.padEnd(10)}  ${s.harness.padEnd(6)}  ${conv.padEnd(36)}  ${action}`);
         }
@@ -121,31 +117,36 @@ export async function up(root, seatIds, opts = {}) {
             }
             const cwd = join(root, s.cwd);
             const line = noop(launchLine(self, root, s));
-            const { state, cmd, where } = stateOf(t, s.id, root);
+            const { state, cmd, where, since } = stateOf(t, s.id, root);
             if (state === "other project") {
                 say(otherLine(s, where));
                 skipped.add(s.id);
                 continue;
             }
+            // The launching mark goes on before the line is typed: from then on, another up of
+            // this seat sees it starting and attaches, however long the shell takes to run it.
+            // (A rehearsal's line is a no-op that never clears it, so a rehearsal sets none.)
             if (state === "stopped") {
                 tmux.newSession(t, s.id, s.label, cwd);
                 tmux.markSession(t, s.id, root);
+                if (!t.rehearsal)
+                    tmux.markLaunching(t, s.id);
                 tmux.typeLine(t, s.id, line);
                 say(`${s.id}: created and launched`);
             }
             else if (state === "bare shell") {
                 tmux.markSession(t, s.id, root);
+                if (!t.rehearsal)
+                    tmux.markLaunching(t, s.id);
                 tmux.typeLine(t, s.id, `cd ${shellQuote(cwd)} && ${line}`);
                 say(`${s.id}: bare shell, relaunched`);
             }
+            else if (state === "starting") {
+                say(`${s.id}: starting (its launch was typed ${Math.round((Date.now() - since) / 1000)}s ago; its shell hasn't run it yet), attaching only`);
+            }
             else {
                 say(`${s.id}: already running (${cmd}), attaching only${unsynced ? ` (warning: ${unsynced})` : ""}`);
-                continue;
             }
-            // Hold the lock until the launch is running, so a second `up` of the same seat
-            // sees it running instead of typing the launch again into the harness's input.
-            if (!t.rehearsal)
-                await waitStarted(t, s.id);
         }
     }
     finally {
