@@ -150,7 +150,9 @@ export async function up(root, seatIds, opts = {}) {
         }
     }
     finally {
-        release();
+        // Wait until the lock is really free: the attach below blocks this process for as long
+        // as the terminal stays open, and the lock must not stay held through it.
+        await release();
     }
     if (opts.attach) {
         if (seats.length === 1) {

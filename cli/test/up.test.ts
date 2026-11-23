@@ -1,11 +1,13 @@
 // up against a real tmux server on a private socket (otterpack-test-*), with fake harnesses.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { readFileSync, existsSync, writeFileSync, chmodSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { up } from "../src/up.ts";
+import { up, shellQuote } from "../src/up.ts";
+import { acquire } from "../src/lock.ts";
+import { tmpdir } from "node:os";
 import { project, fakeHome, tmp, markSynced } from "./helpers.ts";
 
 const FAKE = fileURLToPath(new URL("./fake", import.meta.url));
@@ -208,7 +210,8 @@ test("with a slow login shell, seats don't wait for each other, and a seat's sec
   // The second up of claude-po arrives while its shell is still starting.
   const second = await one("claude-po");
   assert.deepEqual([...first, second], [0, 0, 0, 0]);
-  assert.ok(Date.now() - started < 5_000, `ups took ${Date.now() - started}ms: they waited on the shells`);
+  // Under one shell's 7 s: no up waited for a shell (the old lock queued them, 5 s each).
+  assert.ok(Date.now() - started < 6_500, `ups took ${Date.now() - started}ms: they waited on the shells`);
   const out = outputs.join("");
   assert.equal(out.match(/created and launched/g)?.length, 3, out);
   assert.match(out, /claude-po: starting \(its launch was typed \d+s ago; its shell hasn't run it yet\), attaching only/);
@@ -231,6 +234,25 @@ test("a stale starting mark (its launch never ran) doesn't stop a relaunch", asy
   const lines = await up(root, ["claude-po"], opts);
   assert.match(lines.join("\n"), /claude-po: bare shell, relaunched/);
   await waitFor("run", () => runs(log).length === 1);
+});
+
+test("a seat attached in its terminal doesn't keep the setup lock (the next seat's up gets it at once)", { skip: spawnSync("sh", ["-c", "command -v script"]).status !== 0 && "needs script(1) for a pty" }, async () => {
+  const { root, env, socket, t } = setup();
+  // A VS Code task terminal: a real pty, where `tmux attach` blocks until the terminal closes.
+  const cmd = [...SELF, "up", "claude-po"].map(shellQuote).join(" ");
+  const term = spawn("script", ["-qfec", cmd, "/dev/null"], { cwd: root, env: { ...env, TERM: "xterm-256color" }, stdio: ["pipe", "pipe", "pipe"] });
+  let out = "";
+  term.stdout.on("data", (d) => (out += d));
+  term.stderr.on("data", (d) => (out += d));
+  try {
+    await waitFor("claude-po attached", () => {
+      try { return t("list-clients", "-F", "#{client_session}") === "claude-po"; } catch { return false; }
+    }, 20_000).catch((e) => assert.fail(`${e.message}; the terminal showed: ${JSON.stringify(out)}`));
+    const release = await acquire(join(tmpdir(), `otterpack-up-${socket}-${process.getuid?.() ?? 0}.lock`), 3_000);
+    await release();
+  } finally {
+    term.kill();
+  }
 });
 
 test("--dry-run reports each seat and changes nothing", async () => {
