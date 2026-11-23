@@ -56,3 +56,38 @@ test("times out with a clear error that names the holder", async () => {
   );
   release();
 });
+
+/** A holder that leaves no note, as an otterpack before 0.6.1 did: plain flock(1) under sh. */
+async function silentHolder(path: string) {
+  const p = spawn("sh", ["-c", `flock ${JSON.stringify(path)} sh -c 'echo held; exec sleep 30'`], { stdio: ["ignore", "pipe", "inherit"] });
+  await new Promise<void>((res) => p.stdout.once("data", () => res()));
+  return p;
+}
+
+test("/proc/locks: a holder that left no note is still named, with the flock pid that frees the lock", { skip: process.platform !== "linux" && "Linux /proc" }, async () => {
+  const path = join(tmp(), "up.lock");
+  const holder = await silentHolder(path);
+  try {
+    await assert.rejects(
+      acquire(path, 1_000),
+      new RegExp(`held by pid ${holder.pid} \\(sh -c flock .*\\), through its flock process (\\d+)\\. That holder doesn't say what it is doing: an otterpack older than 0\\.6\\.1.*kill \\d+ frees the lock`),
+    );
+  } finally {
+    holder.kill();
+  }
+});
+
+test("/proc/locks: a note left by an earlier holder never names the wrong process", { skip: process.platform !== "linux" && "Linux /proc" }, async () => {
+  const path = join(tmp(), "up.lock");
+  writeFileSync(path, JSON.stringify({ pid: 1, what: "otterpack up claude-old in /old", since: new Date().toISOString() }));
+  const holder = await silentHolder(path);
+  try {
+    await assert.rejects(acquire(path, 1_000), (e: Error) => {
+      assert.doesNotMatch(e.message, /claude-old|pid 1 /);
+      assert.match(e.message, new RegExp(`held by pid ${holder.pid} `));
+      return true;
+    });
+  } finally {
+    holder.kill();
+  }
+});
