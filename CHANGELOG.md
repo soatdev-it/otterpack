@@ -2,6 +2,12 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.0 — 2026-11-23
+
+### Changed
+
+- sync takes over a file that is already there with exactly the content it would write, typically a copy of the same library file, instead of stopping on it. The output gives the number of files taken over. From then on they are generated files: `update` changes them, and removing their kit removes them. Only files whose content differs still stop sync. Adding otterpack to a project that already has some of the library's skills and agents then stops only on those that really differ.
+
 ## 0.5.0 — 2026-11-23
 
 ### Removed

@@ -53,7 +53,7 @@ function notice(root: string): void {
   if (n) console.log(`otterpack: ${n}`);
 }
 
-function report(r: { commit: string; written: string[]; removed: string[]; replaced?: string[]; backup?: string; unmanaged?: string[] }): void {
+function report(r: { commit: string; written: string[]; removed: string[]; adopted?: string[]; replaced?: string[]; backup?: string; unmanaged?: string[] }): void {
   const [first, ...rest] = reportLines(r);
   console.log(`otterpack: ${first}`);
   for (const l of rest) console.log(l);
@@ -126,12 +126,12 @@ export async function main(argv: string[]): Promise<number> {
       const r = update(root);
       if (r.from === r.to) {
         console.log(`otterpack: already at the library's latest commit ${r.to.slice(0, 12)}`);
-        if (r.written.length || r.removed.length) report({ commit: r.to, written: r.written, removed: r.removed });
+        if (r.written.length || r.removed.length || r.adopted.length) report({ commit: r.to, written: r.written, removed: r.removed, adopted: r.adopted });
         return 0;
       }
       console.log(`otterpack: library ${r.from ? r.from.slice(0, 12) : "(unpinned)"} -> ${r.to.slice(0, 12)}`);
       for (const l of r.log) console.log(`  ${l}`);
-      report({ commit: r.to, written: r.written, removed: r.removed });
+      report({ commit: r.to, written: r.written, removed: r.removed, adopted: r.adopted });
       notice(root);
       console.log("Review with git diff, then commit.");
       return 0;

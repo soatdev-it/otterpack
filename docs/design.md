@@ -42,7 +42,10 @@ The CLI is TypeScript on Node. The harnesses already need Node, so it is there i
 
 What sync does:
 
-- **It owns only what it wrote.** `lock.json` lists every generated file with its hash. A file in the way that isn't in the list, or a generated file edited by hand, stops sync before it writes anything. `--replace` moves such files to `.otterpack/replaced/<time>/`, and `--prune` also moves the hand-made agents and skills that no kit replaces. Nothing is ever deleted that sync didn't generate.
+- **It owns only what it wrote, or found exactly as it would write it.** `lock.json` lists every generated file with its hash.
+  - A file in the way that isn't in the list is taken over when its bytes are exactly what sync writes. Typically it's a copy of the same library file. The output says how many files were taken over.
+  - Any other file in the way, or a generated file edited by hand, stops sync before it writes anything. `--replace` moves such files to `.otterpack/replaced/<time>/`, and `--prune` also moves the hand-made agents and skills that no kit replaces.
+  - Sync never deletes or overwrites content it didn't write: a file it took over held only the library's content.
 - **It writes the kits once per project.** Every seat sees the same kits: the union listed in `kits:`. Scoping kits per seat would need per-seat config homes or launch flags. That cost isn't worth it until the shared set gets too large for the context.
 - **It writes each skill twice.** Claude Code reads only `.claude/skills/`, and Codex reads only `.agents/skills/`. A skill in both is listed once by each. Copies are used rather than symlinks, so a checkout on any OS and any git setting sees the same files.
 - **It writes subagents for Claude only.** Codex has no equivalent.

@@ -31,11 +31,15 @@ interface Opts {
   onLine?: (line: string) => void;
 }
 
-export function reportLines(r: Pick<SyncResult, "commit" | "written" | "removed">): string[] {
+export function reportLines(r: Pick<SyncResult, "commit" | "written" | "removed"> & { adopted?: string[] }): string[] {
+  const n = r.adopted?.length ?? 0;
   return [
     `library at ${r.commit.slice(0, 12)}, ${r.written.length} written, ${r.removed.length} removed`,
     ...r.written.map((p) => `  + ${p}`),
     ...r.removed.map((p) => `  - ${p}`),
+    ...(n
+      ? [`  = ${n} file${n === 1 ? "" : "s"} already there with the content sync writes, now managed by sync (update changes ${n === 1 ? "it" : "them"}, and removing ${n === 1 ? "its" : "their"} kit removes ${n === 1 ? "it" : "them"})`]
+      : []),
   ];
 }
 

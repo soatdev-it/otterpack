@@ -171,9 +171,58 @@ test("sync works when the library cache was deleted", () => {
   assert.deepEqual(sync(root, { home }).written, []);
 });
 
-test("a hand-made file identical to a kit file is still a conflict (never adopted)", () => {
-  const { root, home } = setup(undefined, "", { ".claude/agents/planner.md": LIB["kits/core/agents/planner.md"] });
-  assert.throws(() => sync(root, { home }), /planner\.md: exists and was not generated/);
+test("a file already there with the content sync writes is taken over, not a conflict", () => {
+  const { lib, root, home } = setup(undefined, "", { ".claude/agents/planner.md": LIB["kits/core/agents/planner.md"] });
+  const r = sync(root, { home });
+  assert.deepEqual(r.adopted, [".claude/agents/planner.md"]);
+  assert.ok(!r.written.includes(".claude/agents/planner.md"));
+  assert.ok(JSON.parse(read(root, ".otterpack/lock.json")).files[".claude/agents/planner.md"]);
+  // From now on it is sync's: a library change updates it, and a second sync has nothing to take over.
+  assert.deepEqual(sync(root, { home }).adopted, []);
+  const next = commitLibrary(lib, { "kits/core/agents/planner.md": "plan v2\n" });
+  sync(root, { home, commit: next });
+  assert.equal(read(root, ".claude/agents/planner.md"), "plan v2\n");
+});
+
+test("a project copied from another one's generated files is taken over whole (no lock yet)", () => {
+  const { root, home } = setup();
+  sync(root, { home });
+  rmSync(join(root, ".otterpack/lock.json"));
+  const r = sync(root, { home });
+  assert.deepEqual(r.written, []);
+  assert.ok(r.adopted.includes(".agents/skills/handoff/SKILL.md") && r.adopted.includes(".vscode/tasks.json"));
+});
+
+test("only the files that differ are conflicts; the matching ones wait, and nothing is written", () => {
+  const { root, home } = setup(undefined, "", {
+    ".claude/agents/planner.md": LIB["kits/core/agents/planner.md"],
+    ".claude/agents/seo-specialist.md": "my own\n",
+  });
+  assert.throws(() => sync(root, { home }), (e: unknown) => {
+    assert.ok(e instanceof SyncConflict);
+    assert.deepEqual(e.conflicts.map((c) => c.path), [".claude/agents/seo-specialist.md"]);
+    return true;
+  });
+  assert.ok(!exists(root, ".otterpack/lock.json"));
+});
+
+test("a matching file with the wrong mode is taken over and its mode fixed", () => {
+  const { root, home } = setup(undefined, "", { ".agents/skills/handoff/run.sh": LIB["kits/core/skills/handoff/run.sh"] });
+  const r = sync(root, { home });
+  assert.ok(r.adopted.includes(".agents/skills/handoff/run.sh"));
+  assert.ok(r.written.includes(".agents/skills/handoff/run.sh"), "rewritten for its mode");
+  assert.ok(statSync(join(root, ".agents/skills/handoff/run.sh")).mode & 0o100);
+});
+
+test("--replace: a matching file inside a skill folder that moves as a whole is written afresh, not taken over", () => {
+  const { root, home } = setup(undefined, "", {
+    ".agents/skills/handoff/SKILL.md": "my version\n",
+    ".agents/skills/handoff/run.sh": LIB["kits/core/skills/handoff/run.sh"],
+  });
+  const r = sync(root, { home, replace: true });
+  assert.ok(r.replaced.includes(".agents/skills/handoff"));
+  assert.ok(!r.adopted.some((p) => p.startsWith(".agents/skills/handoff/")));
+  assert.ok(r.written.includes(".agents/skills/handoff/run.sh"));
 });
 
 test("a sync that fails half-way can be run again once the cause is fixed", () => {

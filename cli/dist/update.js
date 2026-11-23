@@ -21,5 +21,5 @@ export function update(root, opts = {}) {
     }
     // sync writes nothing and keeps the old lock if anything is in the way.
     const r = sync(root, { home, commit: to });
-    return { from, to, log, written: r.written, removed: r.removed };
+    return { from, to, log, written: r.written, removed: r.removed, adopted: r.adopted };
 }
