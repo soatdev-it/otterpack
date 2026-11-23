@@ -4,22 +4,58 @@
 // server started meanwhile can inherit it.
 // The holder writes who it is into the lock file, so a timed-out wait can name it.
 import { spawn } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, statSync, writeFileSync } from "node:fs";
 
 export class LockError extends Error {}
 
 interface Holder { pid: number; what: string; since: string }
 
-function holderOf(path: string): string {
-  let h: Holder;
+function noted(path: string): Holder | undefined {
   try {
-    h = JSON.parse(readFileSync(path, "utf8")) as Holder;
+    const h = JSON.parse(readFileSync(path, "utf8")) as Holder;
+    return h && typeof h.pid === "number" ? h : undefined;
   } catch {
-    return "";
+    return undefined;
   }
-  if (!h || typeof h.pid !== "number") return "";
-  const secs = Math.round((Date.now() - Date.parse(h.since)) / 1000);
-  return `. It is held by pid ${h.pid} (${h.what}), for ${secs}s now. If that process is stuck, stop it (kill ${h.pid}), then try again`;
+}
+
+/**
+ * The process holding the lock, from the kernel (Linux /proc/locks): the flock(1) process,
+ * and the process that started it. It names a holder that wrote no note (an otterpack
+ * older than 0.6.1), and is never fooled by a note a previous holder left behind.
+ */
+function kernelHolder(path: string): { flock: number; parent: number; cmd: string } | undefined {
+  try {
+    const ino = statSync(path).ino;
+    const line = readFileSync("/proc/locks", "utf8")
+      .split("\n")
+      .find((l) => !l.includes("->") && /\bFLOCK\b/.test(l) && l.trim().split(/\s+/)[5]?.endsWith(`:${ino}`));
+    if (!line) return undefined;
+    const flock = Number(line.trim().split(/\s+/)[4]);
+    const stat = readFileSync(`/proc/${flock}/stat`, "utf8");
+    const parent = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1]);
+    const cmd = readFileSync(`/proc/${parent}/cmdline`, "utf8").split("\0").filter(Boolean).join(" ");
+    return { flock, parent, cmd: cmd.length > 160 ? `${cmd.slice(0, 157)}...` : cmd };
+  } catch {
+    return undefined;
+  }
+}
+
+function holderOf(path: string): string {
+  const note = noted(path);
+  const k = kernelHolder(path);
+  if (note && (!k || k.parent === note.pid)) {
+    const secs = Math.round((Date.now() - Date.parse(note.since)) / 1000);
+    return `. It is held by pid ${note.pid} (${note.what}), for ${secs}s now. If that process is stuck, stop it (kill ${note.pid}), then try again`;
+  }
+  if (k) {
+    return (
+      `. It is held by pid ${k.parent} (${k.cmd || "command unknown"}), through its flock process ${k.flock}. ` +
+      `That holder doesn't say what it is doing: an otterpack older than 0.6.1, still running in a terminal VS Code kept open, does that. ` +
+      `kill ${k.flock} frees the lock (a seat that process is attached to keeps running), then try again`
+    );
+  }
+  return "";
 }
 
 /**

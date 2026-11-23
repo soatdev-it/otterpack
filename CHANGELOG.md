@@ -2,6 +2,16 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.5 — 2026-11-23
+
+### Fixed
+
+- A lock timeout now names the holder even when it left no note, as an otterpack older than 0.6.1 doesn't. It also ignores a note left behind by an earlier holder. It reads the holder from the kernel (`/proc/locks` on Linux): the process and its command, and the `flock` pid to kill to free the lock.
+
+### Upgrade
+
+- After upgrading, run **Terminal: Kill All Terminals** in VS Code, then reload the window. A reload keeps the seat terminals' processes running, so a terminal started before the upgrade still runs the old otterpack. Before 0.6.4, such a process kept the setup lock for as long as it stayed attached, and every other seat timed out. The seats themselves keep running in tmux.
+
 ## 0.6.4 — 2026-11-23
 
 ### Fixed
