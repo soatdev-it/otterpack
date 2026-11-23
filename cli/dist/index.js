@@ -10,7 +10,6 @@ import { init, DEFAULT_TEMPLATE } from "./init.js";
 import { update } from "./update.js";
 import { doctor } from "./doctor.js";
 import { listLibrary } from "./list.js";
-import { migrate } from "./migrate.js";
 import { addSeat, removeSeat, resetSeat, status, stopSeats, reportLines, disableSeat, enableSeat, addKit, removeKit, rebriefNotice } from "./manage.js";
 const USAGE = `usage: otterpack <command>   (otterpack --version: the installed version)
 
@@ -38,10 +37,6 @@ change the team:
   disable <seat>                     stop a seat and keep it off (no terminal, not started by up); all its files are kept
   enable <seat>                      undo disable: the seat starts again on the next reload or up
   kit add|remove <kit>               add a kit (library, or .otterpack/local/kits/<kit>/) to kits: or take it out, and sync
-
-upgrade:
-  migrate                            move a project set up by agentteam (otterpack's old name) to .otterpack/:
-                                     stops its seats (conversations kept), renames the folder, syncs
 
 `;
 const NEXT = "Next: commit .otterpack/ and the generated files, then Reload the VS Code window (Developer: Reload Window)\n" +
@@ -272,15 +267,6 @@ export async function main(argv) {
             const [id] = seatArgs(rest.filter((a) => a !== "--keep-conversation"), "remove", 1, 1);
             surviveOwnPane();
             removeSeat(findRoot(), id, { keepConversation, onLine: say });
-            return 0;
-        }
-        case "migrate": {
-            seatArgs(rest, "migrate", 0, 0);
-            const r = migrate(process.cwd(), { onLine: say });
-            report(r.sync);
-            notice(r.root);
-            console.log("Next: commit the move (git add -A .otterpack .agentteam .vscode, and the other generated files), then reload the\n" +
-                "VS Code window so the seat terminals run otterpack. ~/.agentteam/ (the old library cache) can be deleted.");
             return 0;
         }
         case "launch": {

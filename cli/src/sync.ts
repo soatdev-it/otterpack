@@ -168,7 +168,7 @@ function removeEmptyParents(root: string, rel: string): void {
   }
 }
 
-export function writeAtomic(path: string, content: Buffer | string): void {
+function writeAtomic(path: string, content: Buffer | string): void {
   mkdirSync(dirname(path), { recursive: true });
   const tmp = `${path}.otterpack-tmp`;
   writeFileSync(tmp, content);

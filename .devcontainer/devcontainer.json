@@ -3,7 +3,8 @@
 	"build": { "dockerfile": "Dockerfile" },
 	"remoteUser": "node",
 	// Logins, conversations and otterpack's library cache survive rebuilds. The claude and
-	// codex volumes keep their pre-rename names: renaming a volume starts it empty.
+	// codex volume names are historical: renaming a volume starts it empty, so they stay
+	// until the GitHub issue "Rename the devcontainer volumes" is done.
 	"mounts": [
 		"source=agentteam-claude,target=/home/node/.claude,type=volume",
 		"source=agentteam-codex,target=/home/node/.codex,type=volume",

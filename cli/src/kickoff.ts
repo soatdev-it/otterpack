@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
-import { LEGACY_DIR, TEAM_DIR, type Seat, type Team } from "./config.ts";
+import type { Seat, Team } from "./config.ts";
 import { SEATS_DIR } from "./sync.ts";
 
 export function marker(team: Team, seat: Seat): string {
@@ -57,16 +57,8 @@ export function briefOf(team: Team, seat: Seat, root: string): Brief {
 }
 
 /** One line per difference, in the order the kickoff lists the files; [] when the seat is up to date. */
-export const FOLDER_MOVED = `the team folder moved from ${LEGACY_DIR}/ to ${TEAM_DIR}/, your seat folder with it`;
-
 export function briefChanges(was: Brief, now: Brief): string[] {
   const out: string[] = [];
-  // A brief recorded under agentteam names .agentteam/ paths: compare them at their new place.
-  const legacy = Object.keys(was.files).filter((f) => f.startsWith(`${LEGACY_DIR}/`));
-  if (legacy.length) {
-    out.push(FOLDER_MOVED);
-    was = { ...was, files: Object.fromEntries(Object.entries(was.files).map(([f, h]) => [f.startsWith(`${LEGACY_DIR}/`) ? TEAM_DIR + f.slice(LEGACY_DIR.length) : f, h])) };
-  }
   if (was.persona !== now.persona) out.push(`persona ${was.persona} is now ${now.persona}`);
   for (const [f, h] of Object.entries(now.files)) {
     if (!(f in was.files)) out.push(`${f} added`);
@@ -81,12 +73,10 @@ export function renderRebrief(team: Team, seat: Seat, root: string, changes: str
   const head = `${marker(team, seat)} Your brief on this team changed since you last read it (${changes.join("; ")}). `;
   if (seat.persona === "none") return head + "You no longer have a persona file: drop the role it gave you, and work as the user asks.";
   const rel = seatRel(root, seat);
-  const moved = changes.includes(FOLDER_MOVED);
   return (
     head +
     `You are ${seat.label}. Read these again, in order; the current versions replace what you read before:\n` +
     briefFiles(team, seat, root).map((f, i) => `${i + 1}. ${rel(f)}`).join("\n") +
-    `\nYour seat folder is ${moved ? "now" : "still"} ${rel(`${SEATS_DIR}/${seat.id}`)}/` +
-    (moved ? `: keep your notes there, not in ${LEGACY_DIR}/` : "")
+    `\nYour seat folder is still ${rel(`${SEATS_DIR}/${seat.id}`)}/`
   );
 }

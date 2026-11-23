@@ -4,8 +4,6 @@
 
 Spin up the right team of coding agents for your project. Each project has its own team(s), and they evolve with time and requirements.
 
-otterpack was called agentteam up to 0.3. To move a project over, see [Upgrade from agentteam](#upgrade-from-agentteam).
-
 A **team** is a set of **seats**. Each seat is a [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex](https://github.com/openai/codex) session with its own role (a **persona**). It runs in its own tmux session and opens in its own VS Code terminal, with its icon and color. After a window reload, a container restart or a rebuild, every seat comes back on the same conversation.
 
 Start from a template that fits the project (`otterpack init`), then shape the team as the project changes. Add a seat when a new role is needed, disable one you don't need for now, and add a kit of skills when the stack grows. The seats' personas, skills and subagents come from a shared **library**, pinned per project, so an improved persona or skill reaches a project when you run `otterpack update`.
@@ -28,7 +26,6 @@ codex-api   API dev    codex    web-developer  stopped           5579260a-96a6-4
 - [What sync writes](#what-sync-writes)
 - [The library](#the-library)
 - [Devcontainers](#devcontainers)
-- [Upgrade from agentteam](#upgrade-from-agentteam)
 - [Troubleshooting](#troubleshooting)
 - [Develop](#develop) · [Design](docs/design.md) · [Changelog](CHANGELOG.md) · [License](#license)
 
@@ -244,16 +241,6 @@ Seats outlive a rebuild only if their conversations do. For that, put the harnes
 After the first build, log in once inside the container, with `claude` and/or `codex login`. The volume keeps the login and every seat's conversation across rebuilds. `otterpack doctor` warns if `~/.claude` or `~/.codex` would be lost on a rebuild.
 
 For tmux-resurrect, add a volume on `~/.tmux/resurrect`. `otterpack up` restores the last saved layout once, when it starts the tmux server.
-
-## Upgrade from agentteam
-
-otterpack was called agentteam up to 0.3. A project set up by agentteam keeps its team in `.agentteam/`, and otterpack's commands stop there and ask you to migrate it:
-
-1. Replace the package: `npm uninstall -g agentteam`, then install otterpack as in [Install](#install). In a devcontainer, swap `install-agentteam.sh` for [`scripts/install-otterpack.sh`](scripts/install-otterpack.sh), which also removes the old package.
-2. In the project, from a terminal outside the seats, run `otterpack migrate`. It stops the project's running seats (their conversations are kept), renames `.agentteam/` to `.otterpack/`, and syncs, which rewrites the VS Code tasks to run `otterpack`.
-3. Commit the move and reload the VS Code window. Each seat resumes its conversation with a one-time re-brief that tells it its files are now in `.otterpack/`.
-
-The environment variables are now `OTTERPACK_*`, and the library cache is `~/.otterpack/cache`. The [changelog](CHANGELOG.md) has the full list.
 
 ## Troubleshooting
 
