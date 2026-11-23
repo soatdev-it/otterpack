@@ -116,7 +116,11 @@ export async function up(root: string, seatIds: string[], opts: UpOptions = {}):
   }
 
   // The kernel holds this lock (flock): it can't outlive this process.
-  const release = await acquire(join(tmpdir(), `otterpack-up-${t.socket ?? "default"}-${process.getuid?.() ?? 0}.lock`));
+  const release = await acquire(
+    join(tmpdir(), `otterpack-up-${t.socket ?? "default"}-${process.getuid?.() ?? 0}.lock`),
+    60_000,
+    `otterpack up ${seatIds.length ? seatIds.join(" ") : "(all seats)"} in ${root}`,
+  );
   try {
     if (!tmux.serverRunning(t)) {
       // First seat after a restart: restore the last saved layout once.

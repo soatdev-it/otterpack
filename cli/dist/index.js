@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { ConfigError, findRoot, loadTeam } from "./config.js";
 import { LibraryError } from "./library.js";
+import { LockError } from "./lock.js";
 import { sync, SyncConflict, SyncError } from "./sync.js";
 import { up } from "./up.js";
 import { launch } from "./launch.js";
@@ -297,7 +298,7 @@ main(process.argv.slice(2)).then((code) => { process.exitCode = code; }, (e) => 
         process.exitCode = 1;
         return;
     }
-    const known = e instanceof ConfigError || e instanceof SyncConflict || e instanceof SyncError || e instanceof LibraryError;
+    const known = e instanceof ConfigError || e instanceof SyncConflict || e instanceof SyncError || e instanceof LibraryError || e instanceof LockError;
     if (!(e instanceof Error) || (!known && !("code" in e)) || process.env.OTTERPACK_DEBUG)
         throw e;
     // Known errors and file-system errors (EACCES, ENOSPC…): one line, no stack trace.

@@ -2,6 +2,12 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.1 — 2026-11-23
+
+### Fixed
+
+- `up` timing out on its setup lock printed a stack trace. It is now a one-line error that names the holder: its pid, its command and project, and how long it has held the lock. The message then says how to stop the holder if it is stuck.
+
 ## 0.6.0 — 2026-11-23
 
 ### Changed

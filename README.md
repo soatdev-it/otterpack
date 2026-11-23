@@ -256,6 +256,8 @@ For tmux-resurrect, add a volume on `~/.tmux/resurrect`. `otterpack up` restores
 
 **"sync stopped, nothing was written".** A file is in the way. Run `otterpack sync --replace` (see [What sync writes](#what-sync-writes)).
 
+**"timed out after 60s waiting for the lock".** Another `otterpack up` is still setting up seats, possibly in another project, since all projects on one tmux server share the lock. The message names that process. Setup usually takes a few seconds per seat; the slow step is the tmux-resurrect restore when `up` starts the tmux server. If the holder is stuck, stop it with `kill <pid>`. The seats it already started keep running in tmux. Then run `otterpack up` again.
+
 **"team.yaml changed since the last sync".** Run `otterpack sync`.
 
 **A seat says its conversation can't be found.** This usually happens after a rebuild without a volume on `~/.claude` or `~/.codex`. To start that seat afresh, run `otterpack reset <seat>`, then `otterpack up <seat>`.
