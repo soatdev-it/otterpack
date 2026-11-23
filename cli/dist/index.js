@@ -123,14 +123,14 @@ export async function main(argv) {
             const r = update(root);
             if (r.from === r.to) {
                 console.log(`otterpack: already at the library's latest commit ${r.to.slice(0, 12)}`);
-                if (r.written.length || r.removed.length)
-                    report({ commit: r.to, written: r.written, removed: r.removed });
+                if (r.written.length || r.removed.length || r.adopted.length)
+                    report({ commit: r.to, written: r.written, removed: r.removed, adopted: r.adopted });
                 return 0;
             }
             console.log(`otterpack: library ${r.from ? r.from.slice(0, 12) : "(unpinned)"} -> ${r.to.slice(0, 12)}`);
             for (const l of r.log)
                 console.log(`  ${l}`);
-            report({ commit: r.to, written: r.written, removed: r.removed });
+            report({ commit: r.to, written: r.written, removed: r.removed, adopted: r.adopted });
             notice(root);
             console.log("Review with git diff, then commit.");
             return 0;

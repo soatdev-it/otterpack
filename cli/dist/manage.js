@@ -14,10 +14,14 @@ import { stateOf } from "./up.js";
 import * as tmux from "./tmux.js";
 import { YAML_FORMAT } from "./init.js";
 export function reportLines(r) {
+    const n = r.adopted?.length ?? 0;
     return [
         `library at ${r.commit.slice(0, 12)}, ${r.written.length} written, ${r.removed.length} removed`,
         ...r.written.map((p) => `  + ${p}`),
         ...r.removed.map((p) => `  - ${p}`),
+        ...(n
+            ? [`  = ${n} file${n === 1 ? "" : "s"} already there with the content sync writes, now managed by sync (update changes ${n === 1 ? "it" : "them"}, and removing ${n === 1 ? "its" : "their"} kit removes ${n === 1 ? "it" : "them"})`]
+            : []),
     ];
 }
 function editTeam(root, home, edit) {

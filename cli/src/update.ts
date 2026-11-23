@@ -10,6 +10,7 @@ export interface UpdateResult {
   log: string[];       // library commits between the two pins
   written: string[];
   removed: string[];
+  adopted: string[];   // see SyncResult.adopted
 }
 
 export function update(root: string, opts: { home?: string } = {}): UpdateResult {
@@ -29,5 +30,5 @@ export function update(root: string, opts: { home?: string } = {}): UpdateResult
   }
   // sync writes nothing and keeps the old lock if anything is in the way.
   const r = sync(root, { home, commit: to });
-  return { from, to, log, written: r.written, removed: r.removed };
+  return { from, to, log, written: r.written, removed: r.removed, adopted: r.adopted };
 }

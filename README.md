@@ -182,7 +182,11 @@ A Codex seat finds its conversation through the kickoff marker, so give it a per
 
 Commit the generated files: the team then works on a machine without otterpack. MCP servers, hooks, `.claude/settings.json` and `.codex/config.toml` stay files you manage yourself.
 
-sync only touches files it generated. A second sync with nothing changed writes nothing. If a file it would write already exists but sync didn't generate it, or a generated file was edited by hand, sync stops and writes nothing. Then:
+sync only touches files it generated. A second sync with nothing changed writes nothing.
+
+If a file it would write already exists with exactly the content sync would write (copied from the same library, for example), sync takes it over. It says how many files it took over, and from then on they are generated files like the others: `update` changes them, and removing their kit removes them.
+
+If a file it would write already exists with other content, or a generated file was edited by hand, sync stops and writes nothing. Then:
 
 - `otterpack sync --replace` moves those files to `.otterpack/replaced/<time>/` and goes ahead. A hand-made skill moves as a whole folder.
 - `otterpack sync --replace --prune` also moves the hand-made agents and skills that no kit replaces.
