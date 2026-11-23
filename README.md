@@ -41,8 +41,8 @@ codex-api   API dev    codex    web-developer  stopped           5579260a-96a6-4
 otterpack installs from a release tag. The built CLI is committed, so the install doesn't need a build step.
 
 ```bash
-npm install -g https://github.com/soatdev-it/otterpack/archive/refs/tags/v0.5.0.tar.gz
-otterpack --version        # 0.5.0
+npm install -g https://github.com/soatdev-it/otterpack/archive/refs/tags/v0.6.0.tar.gz
+otterpack --version        # 0.6.0
 ```
 
 <details>
@@ -52,7 +52,7 @@ Clone the tag, pack it, and install the package file. This works over HTTPS (wit
 
 ```bash
 D=$(mktemp -d)
-git clone --depth 1 --branch v0.5.0 https://github.com/soatdev-it/otterpack.git "$D/src"
+git clone --depth 1 --branch v0.6.0 https://github.com/soatdev-it/otterpack.git "$D/src"
 (cd "$D" && npm pack "$D/src") && npm install -g "$D"/otterpack-*.tgz && rm -rf "$D"
 ```
 
