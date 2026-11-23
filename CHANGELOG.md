@@ -2,6 +2,12 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.4 — 2026-11-23
+
+### Fixed
+
+- The first seat to start no longer keeps the setup lock while its terminal stays attached. `up <seat>` released the lock just before `tmux attach`. The release completes asynchronously, and the attach blocks the process for as long as the terminal is open, so the lock stayed held. On a window reload, one seat started, and every other seat waited 60 s and failed. `up` now waits until the lock is free before it attaches. This bug predates 0.6.
+
 ## 0.6.3 — 2026-11-23
 
 ### Fixed

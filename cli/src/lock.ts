@@ -22,8 +22,13 @@ function holderOf(path: string): string {
   return `. It is held by pid ${h.pid} (${h.what}), for ${secs}s now. If that process is stuck, stop it (kill ${h.pid}), then try again`;
 }
 
-/** `what` says who holds the lock, for anyone left waiting on it. */
-export function acquire(path: string, timeoutMs = 60_000, what = "otterpack"): Promise<() => void> {
+/**
+ * `what` says who holds the lock, for anyone left waiting on it. The release resolves once
+ * the flock child has exited, so the lock is really free: await it before anything that
+ * blocks this process (a `tmux attach` does, for as long as the terminal stays open, and
+ * the pipe to the child only closes on the event loop).
+ */
+export function acquire(path: string, timeoutMs = 60_000, what = "otterpack"): Promise<() => Promise<void>> {
   return new Promise((resolve, reject) => {
     const child = spawn("flock", ["-w", String(Math.ceil(timeoutMs / 1000)), path, "sh", "-c", "echo locked; exec cat >/dev/null"], {
       stdio: ["pipe", "pipe", "pipe"],
@@ -39,7 +44,16 @@ export function acquire(path: string, timeoutMs = 60_000, what = "otterpack"): P
       } catch {
         /* only a diagnostic: the lock itself is held either way */
       }
-      resolve(() => child.stdin.end());
+      resolve(
+        () =>
+          new Promise<void>((done) => {
+            if (child.exitCode !== null || child.signalCode !== null) return done();
+            child.once("exit", () => done());
+            child.stdin.end();
+            // Should closing the pipe not end it, the lock must still go.
+            setTimeout(() => child.kill("SIGKILL"), 2_000).unref();
+          }),
+      );
     });
     child.on("error", (e: any) =>
       reject(new LockError(e.code === "ENOENT" ? "flock is not installed (util-linux); otterpack up needs it" : `flock: ${e.message}`)),
