@@ -2,7 +2,7 @@
 # Install otterpack in a devcontainer. Copy this file to your project's .devcontainer/ and run it
 # from devcontainer.json (postCreateCommand and postAttachCommand). It never fails the container
 # build: on any problem it prints what to do and exits 0. It skips the install when the right
-# version is already there, so it is cheap to run on every attach.
+# version (or a newer one) is already there, so it is cheap to run on every attach.
 #
 # Change TAG to upgrade; the next rebuild or window reload installs it. A fork can set
 # OTTERPACK_REPO (and OTTERPACK_TAG) in the environment instead of editing this file.
@@ -11,9 +11,19 @@ REPO=${OTTERPACK_REPO:-https://github.com/soatdev-it/otterpack.git}
 
 say() { echo "otterpack install: $*"; }
 
-if command -v otterpack >/dev/null 2>&1 && [ "v$(otterpack --version 2>/dev/null)" = "$TAG" ]; then
-  say "$TAG already installed"
-  exit 0
+installed=$(otterpack --version 2>/dev/null)
+if [ -n "$installed" ]; then
+  if [ "v$installed" = "$TAG" ]; then
+    say "$TAG already installed"
+    exit 0
+  fi
+  # Never downgrade: this runs on every window reload, and an older TAG left in the
+  # script would replace a newer otterpack installed by hand.
+  newest=$(printf '%s\n%s\n' "${TAG#v}" "$installed" | sort -V | tail -n 1)
+  if [ "$newest" = "$installed" ]; then
+    say "v$installed is installed, newer than TAG $TAG: kept. Set TAG=v$installed at the top of $0 to pin it"
+    exit 0
+  fi
 fi
 
 # A private repo (a fork, say) needs a git login over HTTPS: the GitHub CLI's (kept across
