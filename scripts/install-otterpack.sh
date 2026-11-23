@@ -6,7 +6,7 @@
 #
 # Change TAG to upgrade; the next rebuild or window reload installs it. A fork can set
 # OTTERPACK_REPO (and OTTERPACK_TAG) in the environment instead of editing this file.
-TAG=${OTTERPACK_TAG:-v0.6.4}
+TAG=${OTTERPACK_TAG:-v0.6.5}
 REPO=${OTTERPACK_REPO:-https://github.com/soatdev-it/otterpack.git}
 
 say() { echo "otterpack install: $*"; }
