@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { ConfigError, findRoot, loadTeam } from "./config.ts";
 import { LibraryError } from "./library.ts";
+import { LockError } from "./lock.ts";
 import { sync, SyncConflict, SyncError } from "./sync.ts";
 import { up } from "./up.ts";
 import { launch } from "./launch.ts";
@@ -281,7 +282,7 @@ main(process.argv.slice(2)).then(
       process.exitCode = 1;
       return;
     }
-    const known = e instanceof ConfigError || e instanceof SyncConflict || e instanceof SyncError || e instanceof LibraryError;
+    const known = e instanceof ConfigError || e instanceof SyncConflict || e instanceof SyncError || e instanceof LibraryError || e instanceof LockError;
     if (!(e instanceof Error) || (!known && !("code" in e)) || process.env.OTTERPACK_DEBUG) throw e;
     // Known errors and file-system errors (EACCES, ENOSPC…): one line, no stack trace.
     process.stderr.write(`otterpack: ${e.message}\n`);

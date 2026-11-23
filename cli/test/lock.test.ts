@@ -47,9 +47,12 @@ test("only one holder at a time, across many concurrent waiters", async () => {
   assert.equal(max, 1);
 });
 
-test("times out with a clear error", async () => {
+test("times out with a clear error that names the holder", async () => {
   const path = join(tmp(), "up.lock");
-  const release = await acquire(path);
-  await assert.rejects(acquire(path, 1_000), /timed out after 1s/);
+  const release = await acquire(path, 5_000, "otterpack up claude-po in /p");
+  await assert.rejects(
+    acquire(path, 1_000),
+    new RegExp(`timed out after 1s waiting for the lock .*held by pid ${process.pid} \\(otterpack up claude-po in /p\\), for \\d+s now\\. If that process is stuck, stop it \\(kill ${process.pid}\\)`),
+  );
   release();
 });
