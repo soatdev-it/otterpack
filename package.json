@@ -1,6 +1,6 @@
 {
   "name": "otterpack",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Spin up the right team of Claude Code and Codex agents for each project, and evolve it as the project changes: one tmux session and VS Code terminal per seat, personas and skills from a shared library",
   "keywords": [
     "ai-agents",
