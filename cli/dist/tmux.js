@@ -51,19 +51,14 @@ export function attach(t, s) {
 }
 // Seat ids are plain session names on the user's tmux server, so two projects can both
 // have a "claude-po". up marks the sessions it makes with the project root; a session with
-// no mark (restored by tmux-resurrect, or made by an older otterpack) counts as this
-// project's if it was started inside it. Sessions made under the old name carry the
-// legacy mark, which counts the same.
+// no mark (restored by tmux-resurrect, for example) counts as this project's if it was
+// started inside it.
 export const ROOT_OPTION = "@otterpack_root";
-export const LEGACY_ROOT_OPTION = "@agentteam_root";
 export const markSession = (t, s, root) => must(t, ["set-option", "-t", `=${s}:`, ROOT_OPTION, root]);
-const markOf = (t, s, option) => run(t, ["show-options", "-v", "-t", `=${s}:`, option]);
 export function owner(t, s, root) {
     if (!hasSession(t, s))
         return { owner: "none" };
-    let mark = markOf(t, s, ROOT_OPTION);
-    if (!(mark.ok && mark.out))
-        mark = markOf(t, s, LEGACY_ROOT_OPTION);
+    const mark = run(t, ["show-options", "-v", "-t", `=${s}:`, ROOT_OPTION]);
     const where = mark.ok && mark.out ? mark.out : run(t, ["display-message", "-p", "-t", `=${s}:`, "#{session_path}"]).out;
     const inside = where === root || where.startsWith(root.endsWith("/") ? root : `${root}/`);
     return { owner: mark.ok && mark.out ? (mark.out === root ? "ours" : "other") : inside ? "ours" : "other", where };

@@ -10,7 +10,6 @@ import { init, DEFAULT_TEMPLATE } from "./init.ts";
 import { update } from "./update.ts";
 import { doctor } from "./doctor.ts";
 import { listLibrary } from "./list.ts";
-import { migrate } from "./migrate.ts";
 import { addSeat, removeSeat, resetSeat, status, stopSeats, reportLines, disableSeat, enableSeat, addKit, removeKit, rebriefNotice } from "./manage.ts";
 import type { Harness } from "./config.ts";
 
@@ -40,10 +39,6 @@ change the team:
   disable <seat>                     stop a seat and keep it off (no terminal, not started by up); all its files are kept
   enable <seat>                      undo disable: the seat starts again on the next reload or up
   kit add|remove <kit>               add a kit (library, or .otterpack/local/kits/<kit>/) to kits: or take it out, and sync
-
-upgrade:
-  migrate                            move a project set up by agentteam (otterpack's old name) to .otterpack/:
-                                     stops its seats (conversations kept), renames the folder, syncs
 
 `;
 
@@ -254,17 +249,6 @@ export async function main(argv: string[]): Promise<number> {
       const [id] = seatArgs(rest.filter((a) => a !== "--keep-conversation"), "remove", 1, 1);
       surviveOwnPane();
       removeSeat(findRoot(), id, { keepConversation, onLine: say });
-      return 0;
-    }
-    case "migrate": {
-      seatArgs(rest, "migrate", 0, 0);
-      const r = migrate(process.cwd(), { onLine: say });
-      report(r.sync);
-      notice(r.root);
-      console.log(
-        "Next: commit the move (git add -A .otterpack .agentteam .vscode, and the other generated files), then reload the\n" +
-        "VS Code window so the seat terminals run otterpack. ~/.agentteam/ (the old library cache) can be deleted.",
-      );
       return 0;
     }
     case "launch": {

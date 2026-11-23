@@ -2,10 +2,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { basename, join, normalize, isAbsolute, dirname, resolve } from "node:path";
 import { parse } from "yaml";
-export const TEAM_DIR = ".otterpack";
-export const TEAM_FILE = `${TEAM_DIR}/team.yaml`;
-/** Where otterpack kept a project's team when it was still called agentteam (0.3 and older). */
-export const LEGACY_DIR = ".agentteam";
+export const TEAM_FILE = ".otterpack/team.yaml";
 const TOP_KEYS = ["name", "library", "charter", "kits", "seats"];
 const SEAT_KEYS = ["id", "label", "icon", "color", "persona", "harness", "cwd", "args", "launcher", "disabled"];
 const SEAT_ID = /^[A-Za-z0-9_-]+$/; // tmux treats "." and ":" specially
@@ -102,26 +99,9 @@ export function findRoot(from = process.cwd()) {
     for (;;) {
         if (existsSync(join(dir, TEAM_FILE)))
             return dir;
-        if (existsSync(join(dir, LEGACY_DIR, "team.yaml"))) {
-            throw new ConfigError(`${dir} keeps its team in ${LEGACY_DIR}/, from agentteam (otterpack's old name): run otterpack migrate there`);
-        }
         const up = dirname(dir);
         if (up === dir)
             throw new ConfigError(`no ${TEAM_FILE} found in ${from} or any parent folder (run otterpack init)`);
-        dir = up;
-    }
-}
-/** The nearest folder upwards that still holds an agentteam .agentteam/team.yaml (before any otterpack one). */
-export function findLegacyRoot(from = process.cwd()) {
-    let dir = resolve(from);
-    for (;;) {
-        if (existsSync(join(dir, LEGACY_DIR, "team.yaml")))
-            return dir;
-        if (existsSync(join(dir, TEAM_FILE)))
-            return undefined;
-        const up = dirname(dir);
-        if (up === dir)
-            return undefined;
         dir = up;
     }
 }

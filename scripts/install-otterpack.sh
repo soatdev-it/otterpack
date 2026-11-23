@@ -36,10 +36,6 @@ if git -c advice.detachedHead=false clone -q --depth 1 --branch "$TAG" "$REPO" "
   pkg=$(cd "$d" && npm pack --silent "$d/src" 2>>"$d/err") &&
   npm install -g "$d/$pkg" >>"$d/err" 2>&1; then
   say "installed $TAG ($(command -v otterpack || echo "not on PATH: check \$(npm config get prefix)/bin"))"
-  # otterpack was called agentteam up to 0.3: remove the old package so its command doesn't linger.
-  if npm ls -g --depth=0 agentteam >/dev/null 2>&1; then
-    npm uninstall -g agentteam >/dev/null 2>&1 && say "removed the old agentteam package (run otterpack migrate in each project)"
-  fi
 else
   say "install of $TAG failed:"
   sed 's/^/  /' "$d/err" | tail -20

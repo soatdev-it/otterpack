@@ -2,7 +2,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
-import { LEGACY_DIR, TEAM_DIR } from "./config.js";
 import { SEATS_DIR } from "./sync.js";
 export function marker(team, seat) {
     return `[seat:${team.name}/${seat.id}]`;
@@ -46,15 +45,8 @@ export function briefOf(team, seat, root) {
     return { persona: seat.persona, files };
 }
 /** One line per difference, in the order the kickoff lists the files; [] when the seat is up to date. */
-export const FOLDER_MOVED = `the team folder moved from ${LEGACY_DIR}/ to ${TEAM_DIR}/, your seat folder with it`;
 export function briefChanges(was, now) {
     const out = [];
-    // A brief recorded under agentteam names .agentteam/ paths: compare them at their new place.
-    const legacy = Object.keys(was.files).filter((f) => f.startsWith(`${LEGACY_DIR}/`));
-    if (legacy.length) {
-        out.push(FOLDER_MOVED);
-        was = { ...was, files: Object.fromEntries(Object.entries(was.files).map(([f, h]) => [f.startsWith(`${LEGACY_DIR}/`) ? TEAM_DIR + f.slice(LEGACY_DIR.length) : f, h])) };
-    }
     if (was.persona !== now.persona)
         out.push(`persona ${was.persona} is now ${now.persona}`);
     for (const [f, h] of Object.entries(now.files)) {
@@ -74,10 +66,8 @@ export function renderRebrief(team, seat, root, changes) {
     if (seat.persona === "none")
         return head + "You no longer have a persona file: drop the role it gave you, and work as the user asks.";
     const rel = seatRel(root, seat);
-    const moved = changes.includes(FOLDER_MOVED);
     return (head +
         `You are ${seat.label}. Read these again, in order; the current versions replace what you read before:\n` +
         briefFiles(team, seat, root).map((f, i) => `${i + 1}. ${rel(f)}`).join("\n") +
-        `\nYour seat folder is ${moved ? "now" : "still"} ${rel(`${SEATS_DIR}/${seat.id}`)}/` +
-        (moved ? `: keep your notes there, not in ${LEGACY_DIR}/` : ""));
+        `\nYour seat folder is still ${rel(`${SEATS_DIR}/${seat.id}`)}/`);
 }
