@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-labelledby="t">
+  <title id="t">otterpack: an otter holding a small terminal, floating with two others</title>
+  <defs>
+    <clipPath id="disc"><circle cx="120" cy="120" r="116"/></clipPath>
+    <!-- a small otter's head, centred on 0,0 -->
+    <g id="pup">
+      <circle cx="-17" cy="-6" r="5" fill="#6d462b"/>
+      <circle cx="17" cy="-6" r="5" fill="#6d462b"/>
+      <ellipse cx="0" cy="2" rx="22" ry="18" fill="#7f5536"/>
+      <ellipse cx="0" cy="9" rx="15" ry="10" fill="#ead3ae"/>
+      <circle cx="-8" cy="-1" r="3" fill="#1f1a17"/>
+      <circle cx="8" cy="-1" r="3" fill="#1f1a17"/>
+      <ellipse cx="0" cy="6" rx="4" ry="2.6" fill="#1f1a17"/>
+    </g>
+  </defs>
+  <circle cx="120" cy="120" r="116" fill="#d8eef7"/>
+  <g clip-path="url(#disc)">
+    <!-- the pack, further back -->
+    <use href="#pup" x="40" y="168"/>
+    <use href="#pup" x="200" y="164"/>
+    <path d="M0 176 Q15 170 30 176 T60 176 T90 176 T120 176 T150 176 T180 176 T210 176 T240 176 V240 H0 Z" fill="#66a9c9"/>
+    <!-- body under the water line -->
+    <ellipse cx="120" cy="214" rx="50" ry="44" fill="#7a4f31"/>
+    <!-- head: wide and flat, small ears set low -->
+    <circle cx="66" cy="98" r="9" fill="#7a4f31"/>
+    <circle cx="174" cy="98" r="9" fill="#7a4f31"/>
+    <circle cx="66" cy="98" r="4.5" fill="#5a3721"/>
+    <circle cx="174" cy="98" r="4.5" fill="#5a3721"/>
+    <ellipse cx="120" cy="124" rx="58" ry="50" fill="#8b5e3c"/>
+    <!-- face patch -->
+    <ellipse cx="120" cy="140" rx="42" ry="30" fill="#f0dcbc"/>
+    <ellipse cx="120" cy="112" rx="34" ry="13" fill="#f0dcbc"/>
+    <!-- eyes -->
+    <circle cx="98" cy="114" r="7.5" fill="#1f1a17"/>
+    <circle cx="142" cy="114" r="7.5" fill="#1f1a17"/>
+    <circle cx="100.6" cy="111.4" r="2.4" fill="#ffffff"/>
+    <circle cx="144.6" cy="111.4" r="2.4" fill="#ffffff"/>
+    <!-- nose and mouth -->
+    <path d="M110 128 Q120 122 130 128 Q126 136 120 137 Q114 136 110 128 Z" fill="#1f1a17"/>
+    <path d="M120 137 L120 142 M120 142 Q113 149 107 143 M120 142 Q127 149 133 143" fill="none" stroke="#1f1a17" stroke-width="2.6" stroke-linecap="round"/>
+    <!-- whiskers -->
+    <g stroke="#5a3721" stroke-width="2" stroke-linecap="round" fill="none">
+      <path d="M97 137 L67 131 M97 143 L65 145 M98 149 L71 158"/>
+      <path d="M143 137 L173 131 M143 143 L175 145 M142 149 L169 158"/>
+    </g>
+    <!-- water line, over the body -->
+    <path d="M0 184 Q20 176 40 184 T80 184 T120 184 T160 184 T200 184 T240 184 V240 H0 Z" fill="#3e8fb5"/>
+    <path d="M0 198 Q20 190 40 198 T80 198 T120 198 T160 198 T200 198 T240 198" fill="none" stroke="#9fd0e6" stroke-width="3" stroke-linecap="round"/>
+    <!-- the terminal it holds -->
+    <rect x="92" y="164" width="56" height="38" rx="7" fill="#22303a"/>
+    <rect x="92" y="164" width="56" height="9" rx="4" fill="#3a4b57"/>
+    <circle cx="99" cy="168.5" r="2" fill="#ef8a7a"/>
+    <circle cx="106" cy="168.5" r="2" fill="#f3c969"/>
+    <circle cx="113" cy="168.5" r="2" fill="#8fd18a"/>
+    <path d="M101 181 L108 186 L101 191" fill="none" stroke="#8fd18a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M113 192 H126" stroke="#d8eef7" stroke-width="2.8" stroke-linecap="round"/>
+    <!-- paws -->
+    <ellipse cx="90" cy="180" rx="11" ry="9" fill="#7a4f31"/>
+    <ellipse cx="150" cy="180" rx="11" ry="9" fill="#7a4f31"/>
+  </g>
+</svg>

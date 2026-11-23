@@ -1,0 +1,35 @@
+# dev-team: an engineering team for a codebase with no marketing site, such as an API, a CLI,
+# a library or a data pipeline. Architect, developer, code reviewer and QA; you (the lead) own
+# the backlog. Edit freely after `otterpack init --template dev-team` (drop a seat you don't
+# need, or add one with `otterpack add`), then run `otterpack sync`.
+# For a second model's opinion, give the reviewer seat a codex-… id and harness: codex.
+# For the stack, add a project-only kit: create .otterpack/local/kits/<name>/ (agents/,
+# skills/) and list <name> in kits: below.
+name: TEMPLATE
+library: TEMPLATE
+kits: [team-core, engineering-core, code-review, research]
+seats:
+  - id: claude-ar
+    label: Architect
+    icon: compass
+    color: ansiBrightCyan
+    persona: architect
+    harness: claude
+  - id: claude-dev
+    label: Developer
+    icon: code
+    color: ansiGreen
+    persona: developer
+    harness: claude
+  - id: claude-rev
+    label: Reviewer
+    icon: eye
+    color: ansiYellow
+    persona: code-reviewer
+    harness: claude
+  - id: claude-qa
+    label: QA
+    icon: beaker
+    color: ansiMagenta
+    persona: qa
+    harness: claude

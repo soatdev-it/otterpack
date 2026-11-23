@@ -1,0 +1,11 @@
+# Keep development-only files out of the release tarballs GitHub builds from tags
+# (npm install -g https://github.com/…/archive/refs/tags/vX.Y.Z.tar.gz).
+/.devcontainer export-ignore
+/.github export-ignore
+/.claude export-ignore
+/cli/test export-ignore
+/scripts/demo-*.sh export-ignore
+/.gitattributes export-ignore
+
+# The compiled CLI is generated: collapse it in diffs and reviews.
+/cli/dist/** linguist-generated=true -diff

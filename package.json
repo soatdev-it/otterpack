@@ -1,0 +1,54 @@
+{
+  "name": "otterpack",
+  "version": "0.4.0",
+  "description": "Spin up the right team of Claude Code and Codex agents for each project, and evolve it as the project changes: one tmux session and VS Code terminal per seat, personas and skills from a shared library",
+  "keywords": [
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "tmux",
+    "vscode",
+    "multi-agent",
+    "cli",
+    "devcontainer"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soatdev-it/otterpack.git"
+  },
+  "homepage": "https://github.com/soatdev-it/otterpack#readme",
+  "bugs": {
+    "url": "https://github.com/soatdev-it/otterpack/issues"
+  },
+  "type": "module",
+  "bin": {
+    "otterpack": "cli/dist/index.js"
+  },
+  "files": [
+    "cli/dist",
+    "library",
+    "scripts/install-otterpack.sh",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "engines": {
+    "node": ">=22.6"
+  },
+  "os": [
+    "linux",
+    "darwin"
+  ],
+  "scripts": {
+    "build": "tsc -p cli",
+    "typecheck": "tsc -p cli --noEmit",
+    "test": "node --experimental-strip-types --no-warnings=ExperimentalWarning --test cli/test/*.test.ts",
+    "dev": "node --experimental-strip-types --no-warnings=ExperimentalWarning cli/src/index.ts"
+  },
+  "dependencies": {
+    "yaml": "2.6.1"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3",
+    "@types/node": "22.13.0"
+  }
+}

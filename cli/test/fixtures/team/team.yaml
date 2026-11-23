@@ -1,0 +1,87 @@
+# A 13-seat team covering every seat option: Claude and Codex, a subfolder cwd, a launcher, args (golden test fixture).
+name: acme
+library: ../library
+charter: docs/CHARTER.md
+kits: []
+seats:
+  - id: claude-po
+    label: PO
+    icon: target
+    color: ansiBlue
+    persona: none
+    harness: claude
+  - id: claude-sm
+    label: ScrumMaster
+    icon: calendar
+    color: ansiCyan
+    persona: none
+    harness: claude
+  - id: claude-tl
+    label: TechLead
+    icon: tools
+    color: ansiGreen
+    persona: none
+    harness: claude
+  - id: claude-uat
+    label: UAT
+    icon: beaker
+    color: ansiYellow
+    persona: none
+    harness: claude
+  - id: claude-ux
+    label: UX
+    icon: paintcan
+    color: ansiMagenta
+    persona: none
+    harness: claude
+  - id: claude-mo
+    label: Marketing
+    icon: megaphone
+    color: ansiRed
+    persona: none
+    harness: claude
+  - id: claude-seo
+    label: SEO
+    icon: search
+    color: ansiWhite
+    persona: none
+    harness: claude
+  - id: claude-ops
+    label: InfraOps
+    icon: server-environment
+    color: ansiBrightBlue
+    persona: none
+    harness: claude
+  - id: claude-copy
+    label: Copywriter
+    icon: globe
+    color: ansiBrightMagenta
+    persona: none
+    harness: claude
+    cwd: docs/drafts
+    launcher: .otterpack/local/copywriter-launch.sh
+  - id: codex-re
+    label: DevSecOps
+    icon: shield
+    color: ansiBrightRed
+    persona: none
+    harness: codex
+  - id: codex-au
+    label: InternalAudit
+    icon: law
+    color: ansiBrightYellow
+    persona: none
+    harness: codex
+  - id: codex-tl
+    label: CodexTL
+    icon: tools
+    color: ansiBrightGreen
+    persona: none
+    harness: codex
+  - id: claude-ar
+    label: Architect
+    icon: compass
+    color: ansiBrightCyan
+    persona: none
+    harness: claude
+    args: [--model, opus, --settings, .otterpack/local/arch-settings.json]

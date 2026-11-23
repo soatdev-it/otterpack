@@ -1,0 +1,23 @@
+{
+	"name": "otterpack",
+	"build": { "dockerfile": "Dockerfile" },
+	"remoteUser": "node",
+	// Logins, conversations and otterpack's library cache survive rebuilds. The claude and
+	// codex volumes keep their pre-rename names: renaming a volume starts it empty.
+	"mounts": [
+		"source=agentteam-claude,target=/home/node/.claude,type=volume",
+		"source=agentteam-codex,target=/home/node/.codex,type=volume",
+		"source=otterpack-state,target=/home/node/.otterpack,type=volume"
+	],
+	"postCreateCommand": "if [ -f package.json ]; then npm install; fi",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"anthropic.claude-code",
+				"openai.chatgpt",
+				"dbaeumer.vscode-eslint",
+				"redhat.vscode-yaml"
+			]
+		}
+	}
+}

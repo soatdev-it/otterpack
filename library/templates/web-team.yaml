@@ -1,0 +1,45 @@
+# web-team: a small web product and marketing team. Product manager, product & marketing
+# owner, architect, copywriter, SEO and a web developer. Edit freely after
+# `otterpack init` (drop a seat you don't need), then run `otterpack sync`.
+# For the stack, add a project-only kit: create .otterpack/local/kits/<name>/ (agents/,
+# skills/) and list <name> in kits: below (for example stack-astro).
+name: TEMPLATE
+library: TEMPLATE
+kits: [team-core, engineering-core, code-review, research, ux-design, seo, marketing]
+seats:
+  - id: claude-pm
+    label: Product
+    icon: lightbulb
+    color: ansiYellow
+    persona: product-manager
+    harness: claude
+  - id: claude-po
+    label: PO/Marketing
+    icon: target
+    color: ansiBlue
+    persona: po-marketing
+    harness: claude
+  - id: claude-ar
+    label: Architect
+    icon: compass
+    color: ansiBrightCyan
+    persona: architect
+    harness: claude
+  - id: claude-copy
+    label: Copywriter
+    icon: globe
+    color: ansiBrightMagenta
+    persona: copywriter
+    harness: claude
+  - id: claude-seo
+    label: SEO
+    icon: search
+    color: ansiWhite
+    persona: seo-expert
+    harness: claude
+  - id: claude-web
+    label: Web dev
+    icon: code
+    color: ansiGreen
+    persona: web-developer
+    harness: claude
