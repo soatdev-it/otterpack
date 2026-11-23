@@ -55,6 +55,24 @@ export function attach(t, s) {
 // started inside it.
 export const ROOT_OPTION = "@otterpack_root";
 export const markSession = (t, s, root) => must(t, ["set-option", "-t", `=${s}:`, ROOT_OPTION, root]);
+// up sets this on a seat's session just before it types the launch, and the launch clears
+// it as soon as it runs. Until then the pane is still a shell (a slow login shell hasn't
+// read the line yet), but the seat is starting: another up must attach, not type it again.
+// A mark older than STARTING_FOR_MS is stale (the line was never run) and counts for nothing.
+export const LAUNCHING_OPTION = "@otterpack_launching";
+export const STARTING_FOR_MS = 120_000;
+export const markLaunching = (t, s) => must(t, ["set-option", "-t", `=${s}:`, LAUNCHING_OPTION, String(Date.now())]);
+export function launchingSince(t, s) {
+    const r = run(t, ["show-options", "-v", "-t", `=${s}:`, LAUNCHING_OPTION]);
+    const n = Number(r.out);
+    return r.ok && r.out && Number.isFinite(n) ? n : undefined;
+}
+/** From inside a seat's pane (the launch itself): tmux finds its server through $TMUX. */
+export function clearLaunching(env) {
+    if (!env.TMUX || !env.TMUX_PANE)
+        return;
+    spawnSync("tmux", ["set-option", "-u", "-t", env.TMUX_PANE, LAUNCHING_OPTION], { env, stdio: "ignore" });
+}
 export function owner(t, s, root) {
     if (!hasSession(t, s))
         return { owner: "none" };

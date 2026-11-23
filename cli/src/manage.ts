@@ -177,7 +177,7 @@ export function status(root: string, opts: Opts = {}): { syncProblem?: string; s
   const server = tmux.serverRunning(t);
   const seats = team.seats.map((s: Seat) => {
     let { state, cmd, where } = server ? stateOf(t, s.id, root) : { state: "stopped" as State, cmd: undefined, where: undefined };
-    if (s.disabled && state !== "running" && state !== "bare shell") state = "disabled";
+    if (s.disabled && state !== "running" && state !== "starting" && state !== "bare shell") state = "disabled";
     return {
       id: s.id, label: s.label, harness: s.harness, persona: s.persona, state, command: cmd, where,
       conversation: sessions[s.id]?.id || undefined,

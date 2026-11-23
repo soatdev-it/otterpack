@@ -2,6 +2,13 @@
 
 All notable changes to otterpack. Versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version may change `team.yaml`, `lock.json` or the commands; its entry then says how to upgrade.
 
+## 0.6.2 — 2026-11-23
+
+### Fixed
+
+- Seats opened at the same time (a VS Code reload) no longer wait for each other's login shells. `up` held its setup lock until each seat's launch was running, up to 5 s per seat, so the last of several seats could time out after 60 s. Six seats with a 4 s login shell took 25 s to set up; now they take 1 s.
+- A seat's second `up` no longer types the launch again when the first one's shell is slow to run it. The line could land in the harness's input as a prompt. `up` now marks the seat as starting when it types the launch, and the launch clears the mark when it runs. Meanwhile another `up` attaches, and `status` shows the seat as starting.
+
 ## 0.6.1 — 2026-11-23
 
 ### Fixed

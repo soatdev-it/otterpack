@@ -9,6 +9,7 @@ import { realpathSync } from "node:fs";
 import { join } from "node:path";
 import { loadTeam, seatOf, type Seat, type Team } from "./config.ts";
 import { codexConversationExists, findClaudeTranscript, findCodexRollout, launchArgv, type LaunchMode } from "./harness.ts";
+import * as tmux from "./tmux.ts";
 import { briefChanges, briefOf, marker, renderKickoff, renderRebrief } from "./kickoff.ts";
 import { clearSession, loadSessions, sessionFile, setSession, SESSIONS_DIR } from "./sessions.ts";
 
@@ -57,6 +58,8 @@ export interface LaunchOptions {
 
 export async function launch(root: string, seatId: string, opts: LaunchOptions = {}): Promise<number> {
   const env = opts.env ?? process.env;
+  // up marked this seat as starting when it typed this line: it is running now.
+  tmux.clearLaunching(env);
   const say = opts.stderr ?? ((s: string) => process.stderr.write(s));
   const home = env.HOME ?? "";
   const team = loadTeam(root);

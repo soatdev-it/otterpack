@@ -83,8 +83,9 @@ Each seat's conversation id is kept in `.otterpack/state/sessions/<seat>.json`, 
 
 `up` keeps the seats alive across VS Code reloads, and brings them back after a restart.
 
-- **One lock around setup.** It is a kernel `flock`, held by a child process, so it can't outlive a killed `up`, and a reused pid can't hold it. The tmux server never inherits it.
+- **One short lock around setup.** It is a kernel `flock`, held by a child process, so it can't outlive a killed `up`, and a reused pid can't hold it. The tmux server never inherits it. It covers the server start (with the resurrect restore) and a few tmux commands per seat, never the wait for a shell. VS Code opens every seat's terminal at once, so the seats' `up`s queue on this lock, and each one holds it for milliseconds. The holder writes its pid and command into the lock file, so a timed-out waiter can name it.
 - **The launch is typed into a shell**, not run as the pane's command. When the harness exits, a shell is left, and the next `up` relaunches the harness on the same conversation. A seat whose harness is running is only attached, never restarted.
+- **A seat whose launch was typed is starting** until the launch runs. A login shell can take seconds to read the line, so `up` marks the session (`@otterpack_launching`, a timestamp) before typing it, and `launch` clears the mark as it starts. Another `up` of that seat then attaches instead of typing the launch a second time, which would land in the harness's input. A mark older than two minutes is stale: the line never ran, and the seat counts as a bare shell again.
 - **tmux-resurrect**, if installed, is restored once, when `up` starts the tmux server.
 - **Each session `up` creates is marked** with the project root (`@otterpack_root`). `status`, `up`, `stop`, `reset` and `remove` act only on this project's sessions. A same-named session of another project is shown, but never attached to or killed.
 - **Commands run from inside a seat** (`stop`, `reset`, `remove`) stop that seat last, and ignore the SIGHUP that its closing pane sends.
